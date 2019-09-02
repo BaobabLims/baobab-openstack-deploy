@@ -1,21 +1,21 @@
-resource "openstack_networking_secgroup_v2" "secgroup_baobab" {
-  name        = "secgroup_baobab"
+resource "openstack_networking_secgroup_v2" "secgroup_baobab_staging" {
+  name        = "secgroup_baobab_staging"
   description = "BAOBAB access security group"
 }
 
-resource "openstack_networking_secgroup_v2" "secgroup_gen_baobab" {
-  name        = "secgroup_gen_baobab"
+resource "openstack_networking_secgroup_v2" "secgroup_gen_baobab_staging" {
+  name        = "secgroup_gen_baobab_staging"
   description = "My neutron ssh-access security group"
 }
 
 module "general_rules" {
   source          = "./modules/network_rules/general"
-  secgroup_id   = "${openstack_networking_secgroup_v2.secgroup_gen_baobab.id}"
+  secgroup_id   = "${openstack_networking_secgroup_v2.secgroup_gen_baobab_staging.id}"
 }
 
 module "baobab_rules" {
   source          = "./modules/network_rules/baobab"
-  secgroup_id = "${openstack_networking_secgroup_v2.secgroup_baobab.id}"
+  secgroup_id = "${openstack_networking_secgroup_v2.secgroup_baobab_staging.id}"
 }
 
 resource "openstack_compute_keypair_v2" "baobab-keypair" {
@@ -60,11 +60,11 @@ resource "openstack_networking_floatingip_v2" "floatip_1" {
 }
 
 resource "openstack_compute_instance_v2" "baobab" {
-  name            = "baobab_demo"
+  name            = "stage_baobablims_ubuntu_16_04"
   image_id        = "${var.image_id}"
   flavor_name     = "${var.flavor}"
   key_pair        = "${openstack_compute_keypair_v2.baobab-keypair.name}"
-  security_groups = ["default", "secgroup_baobab", "secgroup_gen_baobab"]
+  security_groups = ["default", "secgroup_baobab_staging", "secgroup_gen_baobab_staging"]
   user_data       = "#cloud-config\nhostname: ${var.fqdn} \nfqdn: ${var.fqdn}"
   
   metadata {
